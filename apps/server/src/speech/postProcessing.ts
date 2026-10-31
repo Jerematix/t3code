@@ -1,7 +1,15 @@
-import { DEFAULT_SPEECH_POST_PROCESSING_PROMPT, type ServerSettings } from "@t3tools/contracts";
+import {
+  DEFAULT_SPEECH_POST_PROCESSING_PROMPT,
+  isProviderAvailable,
+  isProviderTextGenerationCapable,
+  type ServerSettings,
+} from "@t3tools/contracts";
 import * as Effect from "effect/Effect";
 import * as Schema from "effect/Schema";
-import { resolveSpeechPostProcessingModelSelection } from "@t3tools/shared/serverSettings";
+import {
+  isModelSelectionProviderEnabled,
+  resolveSpeechPostProcessingModelSelection,
+} from "@t3tools/shared/serverSettings";
 
 import * as TextGeneration from "../textGeneration/TextGeneration.ts";
 import * as ProviderRegistry from "../provider/ProviderRegistry.ts";
@@ -25,12 +33,24 @@ export const postProcessTranscript = Effect.fn("speech.postProcessTranscript")(f
   const { mode, customInstructions } = input.settings.speechPostProcessingPrompt;
   const instructions =
     (mode === "custom" ? customInstructions.trim() : "") || DEFAULT_SPEECH_POST_PROCESSING_PROMPT;
-  const textGeneration = yield* TextGeneration.TextGeneration;
   const registry = yield* ProviderRegistry.ProviderRegistry;
-  const modelSelection = resolveSpeechPostProcessingModelSelection(
-    input.settings,
-    yield* registry.getProviders,
+  const providers = (yield* registry.getProviders).filter(
+    (provider) =>
+      provider.enabled &&
+      provider.installed &&
+      provider.status === "ready" &&
+      provider.auth.status !== "unauthenticated" &&
+      isProviderAvailable(provider) &&
+      isProviderTextGenerationCapable(provider),
   );
+  const modelSelection = resolveSpeechPostProcessingModelSelection(input.settings, providers);
+  if (
+    !isModelSelectionProviderEnabled(input.settings, modelSelection) ||
+    !providers.some((provider) => provider.instanceId === modelSelection.instanceId)
+  ) {
+    return input.transcript;
+  }
+  const textGeneration = yield* TextGeneration.TextGeneration;
   const { prompt } = buildTranscriptionPostProcessingPrompt(
     input.settings.speechCorrectionWord.trim()
       ? `${instructions}\n\nCorrection cue: ${quoteCorrectionWord(input.settings.speechCorrectionWord.trim())}. Only when this cue clearly marks a spoken self-correction, apply the correction the speaker made and omit the cue from the result. The correction may revise, add to, or retract earlier speech. Preserve everything else. If the cue is an intended part of the sentence, keep it. Use the surrounding context to decide; do not assume every occurrence is a correction.`
