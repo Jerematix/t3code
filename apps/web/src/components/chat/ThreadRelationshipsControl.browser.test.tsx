@@ -47,6 +47,7 @@ function setup() {
     thread: {
       id: threadId,
       title: "Fork",
+      modelSelection: makeThreadProjectionFixture().thread.modelSelection,
       activeProviderThreadId: null,
       lineage: { parentThreadId: ThreadId.make("source"), relationshipToParent: "fork" },
       forkedFrom: null,
@@ -78,14 +79,15 @@ it.each([
   if (action === "merge") {
     await screen.getByRole("button", { name: "Merge back to source conversation" }).click();
   } else {
-    await screen.getByRole("button", { name: "Disconnect agent session" }).click();
+    await screen.getByRole("button", { name: "Lineage actions" }).click();
+    await page.getByRole("menuitem", { name: "Disconnect agent session" }).click();
   }
 
   await expect.element(page.getByText(title, { exact: true })).toBeVisible();
   await expect
     .element(
       screen.getByRole("button", {
-        name: action === "merge" ? "Merge back to source conversation" : "Disconnect agent session",
+        name: action === "merge" ? "Merge back to source conversation" : "Lineage actions",
       }),
     )
     .toBeEnabled();
@@ -112,7 +114,8 @@ it.each([
     if (action === "merge") {
       await screen.getByRole("button", { name: "Merge back to source conversation" }).click();
     } else {
-      await screen.getByRole("button", { name: "Disconnect agent session" }).click();
+      await screen.getByRole("button", { name: "Lineage actions" }).click();
+      await page.getByRole("menuitem", { name: "Disconnect agent session" }).click();
     }
   };
 
@@ -130,9 +133,7 @@ it.each([
     );
   });
   if (action === "disconnect") {
-    await expect
-      .element(screen.getByRole("button", { name: "Disconnect agent session" }))
-      .toBeEnabled();
+    await expect.element(screen.getByRole("button", { name: "Lineage actions" })).toBeEnabled();
   }
 });
 
