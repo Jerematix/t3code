@@ -238,7 +238,7 @@ function CleanupResults({
             control={
               (entry.outcome === "removed" ||
                 (entry.outcome === "kept" && entry.bytes !== null)) && (
-                <span className="text-xs text-muted-foreground">
+                <span className="text-meta text-muted-foreground">
                   {[
                     entry.kind !== "worktree" && entry.files !== null
                       ? `${entry.files.toLocaleString()} ${entry.files === 1 ? "file" : "files"}`
@@ -254,12 +254,12 @@ function CleanupResults({
         );
       })}
       {report.omittedCount > 0 && (
-        <p className="px-3 py-2.5 text-xs text-muted-foreground sm:px-4">
+        <p className="px-3 py-2.5 text-meta text-muted-foreground sm:px-4">
           {environmentLabel}: {report.omittedCount.toLocaleString()} more results.
         </p>
       )}
       {report.entries.length === 0 && report.omittedCount === 0 && (
-        <p className="px-3 py-2.5 text-xs text-muted-foreground sm:px-4">
+        <p className="px-3 py-2.5 text-meta text-muted-foreground sm:px-4">
           {environmentLabel}: Nothing needed cleanup.
         </p>
       )}
@@ -384,7 +384,7 @@ function CleanupSection() {
           }
           control={
             <Button
-              variant="outline"
+              variant="secondary"
               size="sm"
               disabled={pending || !hasRules || !state.some((entry) => entry.allowed)}
               onClick={() => void deleteNow()}

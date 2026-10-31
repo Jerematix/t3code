@@ -51,7 +51,7 @@ export function CliCommandSettingsRow() {
       control={
         <Button
           size="sm"
-          variant="outline"
+          variant="secondary"
           disabled={pending || query.isPending}
           onClick={() => change(installed ? "uninstall" : "install")}
         >
