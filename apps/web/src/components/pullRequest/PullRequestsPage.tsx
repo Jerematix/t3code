@@ -1268,6 +1268,7 @@ export function PullRequestsPage() {
           filtered={listFiltered}
           filterSummary={filterSummary}
           onClearFilters={clearListFilters}
+          onShowAll={() => updateListScope({ state: "all" })}
           searching={typedQuery.length > 0 && (!querySettled || showingCarried)}
           canLoadMore={listData?.truncated === true && (canContinue || pageSize < MAX_PAGE_SIZE)}
           loadingMore={loadingMore}
